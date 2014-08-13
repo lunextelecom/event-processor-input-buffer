@@ -2,8 +2,6 @@ package com.lunex.inputprocessor;
 
 import java.io.IOException;
 
-import com.lunex.inputprocessor.udp.InputProcessorUDPClient;
-import com.lunex.inputprocessor.udp.InputProcessorUDPServer;
 
 /**
  * Hello world!
@@ -17,7 +15,8 @@ public class App
         
         try {
         	ParameterHandler.getPropertiesValues();
-		} catch (Exception e) {
+        	
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
