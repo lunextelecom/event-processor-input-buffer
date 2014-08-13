@@ -19,5 +19,10 @@
 			<artifactId>netty-all</artifactId>
 			<version>4.0.21.Final</version>
 		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20140107</version>
+		</dependency>
 	</dependencies>
 </project>

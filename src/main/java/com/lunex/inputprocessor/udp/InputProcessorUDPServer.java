@@ -10,8 +10,12 @@ import com.lunex.inputprocessor.Constants;
 
 public class InputProcessorUDPServer {
 	private Bootstrap bootStrap;
-	private int port = Integer.parseInt(System.getProperty(Constants.UDP_PORT_KEY, "7686"));
+	private int port;
 
+	public InputProcessorUDPServer(int port) {
+		this.port = port;
+	}
+	
 	public void startServer() throws Exception {
 		EventLoopGroup group = new NioEventLoopGroup();
 		try {

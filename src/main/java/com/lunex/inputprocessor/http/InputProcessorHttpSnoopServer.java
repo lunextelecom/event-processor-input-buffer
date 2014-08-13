@@ -1,7 +1,5 @@
 package com.lunex.inputprocessor.http;
 
-import com.lunex.inputprocessor.Constants;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -13,13 +11,20 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 public class InputProcessorHttpSnoopServer {
-	public boolean isSSL = (System.getProperty(Constants.HTTP_SSL_PORT_KEY) != null && System.getProperty(Constants.HTTP_SSL_PORT_KEY) != "");
-	public int port = Integer.parseInt(isSSL ? System.getProperty(Constants.HTTP_PORT_KEY) : System.getProperty(Constants.HTTP_SSL_PORT_KEY));
-	public String host = System.getProperty(Constants.HTTP_HOST_KEY);
-	public int numThread = 1;
+	private boolean isSSL;
+	private int port;
+	private String host;	
 	private ServerBootstrap bootStrap;
 	private Channel channel;
+	
+	public int numThread = 1;
 
+	public InputProcessorHttpSnoopServer(String host, int port, boolean isSSL) {
+		this.isSSL = isSSL;
+		this.host = host;
+		this.port = port;
+	}
+	
 	public void startServer() throws Exception {
 		// Configure SSL.
 		final SslContext sslCtx;

@@ -2,6 +2,9 @@ package com.lunex.inputprocessor;
 
 import java.io.IOException;
 
+import com.lunex.inputprocessor.udp.InputProcessorUDPClient;
+import com.lunex.inputprocessor.udp.InputProcessorUDPServer;
+
 /**
  * Hello world!
  *
@@ -14,15 +17,7 @@ public class App
         
         try {
         	ParameterHandler.getPropertiesValues();
-        	
-        	System.setProperty(Constants.HTTP_HOST_KEY, ParameterHandler.HTTP_HOST);
-        	System.setProperty(Constants.HTTP_PORT_KEY, ParameterHandler.HTTP_HOST);
-        	System.setProperty(Constants.HTTP_SSL_PORT_KEY, ParameterHandler.HTTP_SSL_PORT);
-        	
-        	System.setProperty(Constants.UDP_PORT_KEY, ParameterHandler.UDP_PORT);
-        	
-        	
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
