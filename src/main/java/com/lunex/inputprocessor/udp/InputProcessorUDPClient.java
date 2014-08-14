@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
 import com.lunex.inputprocessor.Constants;
-import com.lunex.inputprocessor.CallbackVisitor;
+import com.lunex.inputprocessor.CallbackUDPVisitor;
 import com.lunex.inputprocessor.testdemo.QuoteOfTheMomentClientHandler;
 
 public class InputProcessorUDPClient {
@@ -27,7 +27,7 @@ public class InputProcessorUDPClient {
 		this.port = port;
 	}
 	
-	public void submitContent(String content, long timeout, CallbackVisitor callback) throws Exception {
+	public void submitContent(String content, long timeout, CallbackUDPVisitor callback) throws Exception {
 
 		EventLoopGroup group = new NioEventLoopGroup();
 		try {
@@ -46,7 +46,7 @@ public class InputProcessorUDPClient {
 		}
 	}
 	
-	public void submitBytesArray(byte[] bytesArray, long timeout, CallbackVisitor callback) throws Exception{
+	public void submitBytesArray(byte[] bytesArray, long timeout, CallbackUDPVisitor callback) throws Exception{
 		EventLoopGroup group = new NioEventLoopGroup();
 		try {
 			Bootstrap b = new Bootstrap();
@@ -63,7 +63,7 @@ public class InputProcessorUDPClient {
 		}
 	}
 	
-	public void submitJsonObject(Object bean, long timeout, CallbackVisitor callback) throws Exception {
+	public void submitJsonObject(Object bean, long timeout, CallbackUDPVisitor callback) throws Exception {
 		EventLoopGroup group = new NioEventLoopGroup();
 		try {
 			Bootstrap b = new Bootstrap();
