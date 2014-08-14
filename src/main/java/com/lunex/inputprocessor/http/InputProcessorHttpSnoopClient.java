@@ -70,7 +70,7 @@ public class InputProcessorHttpSnoopClient {
 		return true;
 	}
 	
-	public void postRequestJsonContent(JSONObject object) throws Exception {
+	public void postRequestJsonContent(JSONObject jsonObject, boolean async) throws Exception {
 		try {
 			if (!this.preProcessURL()) {
 				return;
@@ -101,11 +101,12 @@ public class InputProcessorHttpSnoopClient {
 			HttpPostRequestEncoder bodyRequestEncoder = new HttpPostRequestEncoder(factory, request, false); // false => not multipart
 
 			// add Form attribute
-			Iterator<?> keys = object.keys();
+			Iterator<?> keys = jsonObject.keys();
 	        while( keys.hasNext() ){
 	            String key = (String)keys.next();
-	            bodyRequestEncoder.addBodyAttribute(key, object.get(key).toString());
+	            bodyRequestEncoder.addBodyAttribute(key, jsonObject.get(key).toString());
 	        }
+	        bodyRequestEncoder.addBodyAttribute("async", String.valueOf(async));
 			request = bodyRequestEncoder.finalizeRequest();
 			
 			// Send the HTTP request.

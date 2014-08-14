@@ -1,6 +1,5 @@
 package com.lunex.inputprocessor.http;
 
-import static io.netty.handler.codec.http.HttpHeaders.getHost;
 import static io.netty.handler.codec.http.HttpHeaders.is100ContinueExpected;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
@@ -17,8 +16,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.socket.DatagramPacket;
-import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -30,10 +27,8 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
-import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.util.CharsetUtil;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -111,7 +106,13 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 					}
 				}
 
-				// TODO something with jsonObject and 
+				// TODO something with jsonObject and
+				if (jsonObject.getBoolean("async")) {
+					Thread thread = new Thread(new PackageProcessorThread(jsonObject));
+					thread.start();
+				} else {
+					
+				}
 				// write response
 				if (!writeResponse(trailer, ctx)) {
 					// If keep-alive is off, close the connection once the
@@ -189,10 +190,10 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 	
 	public class PackageProcessorThread implements Runnable {
 
-		DatagramPacket packet;
+		JSONObject jsonObject;
 
-		public PackageProcessorThread(DatagramPacket packet) {
-			this.packet = packet;
+		public PackageProcessorThread(JSONObject jsonObject) {
+			this.jsonObject = jsonObject;
 		}
 
 		public void run() {
