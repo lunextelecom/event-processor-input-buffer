@@ -5,7 +5,6 @@ import com.lunex.inputprocessor.CallbackUDPVisitor;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
-import io.netty.util.CharsetUtil;
 
 public class InputProcessorUDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 	

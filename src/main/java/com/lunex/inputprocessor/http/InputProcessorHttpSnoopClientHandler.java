@@ -4,12 +4,7 @@ import com.lunex.inputprocessor.CallbackHTTPVisitor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.util.CharsetUtil;
 
 public class InputProcessorHttpSnoopClientHandler extends SimpleChannelInboundHandler<HttpObject> {
 

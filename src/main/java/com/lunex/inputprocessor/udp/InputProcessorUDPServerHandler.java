@@ -11,7 +11,7 @@ public class InputProcessorUDPServerHandler extends
 
 	@Override
 	public void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-		System.out.println(packet);
+		//System.out.println(packet);
 		
 		String packageContent = packet.content().toString(CharsetUtil.UTF_8);
 		String responseContent = "Get package and Process async";

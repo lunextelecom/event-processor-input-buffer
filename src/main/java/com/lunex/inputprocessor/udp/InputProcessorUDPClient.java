@@ -14,9 +14,7 @@ import java.net.InetSocketAddress;
 
 import org.json.JSONObject;
 
-import com.lunex.inputprocessor.Constants;
 import com.lunex.inputprocessor.CallbackUDPVisitor;
-import com.lunex.inputprocessor.testdemo.QuoteOfTheMomentClientHandler;
 
 public class InputProcessorUDPClient {
 	

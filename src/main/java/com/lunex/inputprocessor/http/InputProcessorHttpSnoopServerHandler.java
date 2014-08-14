@@ -17,6 +17,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
@@ -32,16 +33,20 @@ import io.netty.handler.codec.http.ServerCookieEncoder;
 import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.util.CharsetUtil;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+
+import org.json.JSONObject;
 
 public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHandler<Object> {
 
 	private HttpRequest request;
 	/** Buffer that stores the response content */
 	private final StringBuilder responseContentBuilder = new StringBuilder();
+	private JSONObject jsonObject = new JSONObject();
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -52,31 +57,19 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 	protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
 		if (msg instanceof HttpRequest) {
 			HttpRequest request = this.request = (HttpRequest) msg;
-
 			
 			if (is100ContinueExpected(request)) {
 				send100Continue(ctx);
 			}
-
-			/*buf.setLength(0);
-			buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-			buf.append("===================================\r\n");
-
-			buf.append("VERSION: ").append(request.getProtocolVersion())
-					.append("\r\n");
-			buf.append("HOSTNAME: ").append(getHost(request, "unknown"))
-					.append("\r\n");
-			buf.append("REQUEST_URI: ").append(request.getUri())
-					.append("\r\n\r\n");*/
-
+			
+			responseContentBuilder.setLength(0);
+			jsonObject = new JSONObject();
 			HttpHeaders headers = request.headers();
 			if (!headers.isEmpty()) {
 				for (Map.Entry<String, String> h : headers) {
 					String key = h.getKey();
 					String value = h.getValue();
-					//buf.append("HEADER: ").append(key).append(" = ").append(value).append("\r\n");
 				}
-				//buf.append("\r\n");
 			}
 
 			QueryStringDecoder queryStringDecoder = new QueryStringDecoder(
@@ -85,15 +78,13 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 			if (!params.isEmpty()) {
 				for (Entry<String, List<String>> p : params.entrySet()) {
 					String key = p.getKey();
-					List<String> vals = p.getValue();
+					List<String> vals = p.getValue();					
 					for (String val : vals) {
-						//buf.append("PARAM: ").append(key).append(" = ").append(val).append("\r\n");
+						jsonObject.append(key, val);
 					}
 				}
-				//buf.append("\r\n");
 			}
-
-			appendDecoderResult(responseContentBuilder, request);
+			//appendDecoderResult(responseContentBuilder, request);
 		}
 		
 		if (msg instanceof HttpContent) {
@@ -101,28 +92,27 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 
 			ByteBuf content = httpContent.content();
 			if (content.isReadable()) {
-				/*buf.append("CONTENT: ");
-				buf.append(content.toString(CharsetUtil.UTF_8));
-				buf.append("\r\n");
-				appendDecoderResult(buf, request);*/
+				String dataContent = content.toString(CharsetUtil.UTF_8);
+				responseContentBuilder.append(dataContent);
+				String[] params = dataContent.split("&");				
+				for (int i = 0; i < params.length; i++) {
+					String[] param = params[i].split("=");
+					jsonObject.append(param[0], param[1]);
+				}				
+				//appendDecoderResult(responseContentBuilder, request);
 			}
 
 			if (msg instanceof LastHttpContent) {
-				//buf.append("END OF CONTENT\r\n");
-
 				LastHttpContent trailer = (LastHttpContent) msg;
 				if (!trailer.trailingHeaders().isEmpty()) {
-					//buf.append("\r\n");
 					for (String name : trailer.trailingHeaders().names()) {
-						for (String value : trailer.trailingHeaders().getAll(
-								name)) {
-							//buf.append("TRAILING HEADER: ");
-							//buf.append(name).append(" = ").append(value).append("\r\n");
+						for (String value : trailer.trailingHeaders().getAll(name)) {
 						}
 					}
-					//buf.append("\r\n");
 				}
 
+				// TODO something with jsonObject and 
+				// write response
 				if (!writeResponse(trailer, ctx)) {
 					// If keep-alive is off, close the connection once the
 					// content is fully written.
@@ -132,19 +122,18 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 		}
 	}
 
-	private static void appendDecoderResult(StringBuilder buf, HttpObject o) {
-		/*DecoderResult result = o.getDecoderResult();
+	/*private static void appendDecoderResult(StringBuilder buf, HttpObject o) {
+		DecoderResult result = o.getDecoderResult();
 		if (result.isSuccess()) {
 			return;
 		}
 
 		buf.append(".. WITH DECODER FAILURE: ");
 		buf.append(result.cause());
-		buf.append("\r\n");*/
-	}
+		buf.append("\r\n");
+	}*/
 
-	private boolean writeResponse(HttpObject currentObj,
-			ChannelHandlerContext ctx) {
+	private boolean writeResponse(HttpObject currentObj, ChannelHandlerContext ctx) {
 		// Decide whether to close the connection or not.
 		boolean keepAlive = isKeepAlive(request);
 		
@@ -188,8 +177,7 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 	}
 
 	private static void send100Continue(ChannelHandlerContext ctx) {
-		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
-				CONTINUE);
+		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
 		ctx.write(response);
 	}
 
@@ -197,5 +185,18 @@ public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHa
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
 		cause.printStackTrace();
 		ctx.close();
+	}
+	
+	public class PackageProcessorThread implements Runnable {
+
+		DatagramPacket packet;
+
+		public PackageProcessorThread(DatagramPacket packet) {
+			this.packet = packet;
+		}
+
+		public void run() {
+			// TODO with Event handler
+		}		
 	}
 }

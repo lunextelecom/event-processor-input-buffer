@@ -8,7 +8,6 @@ import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.ssl.SslContext;
 
 import com.lunex.inputprocessor.CallbackHTTPVisitor;
-import com.lunex.inputprocessor.testdemo.HttpSnoopClientHandler;
 
 public class InputProcessorHttpSnoopClientInitializer extends
 		ChannelInitializer<SocketChannel> {
