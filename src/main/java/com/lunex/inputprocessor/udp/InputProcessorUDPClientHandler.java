@@ -1,6 +1,6 @@
 package com.lunex.inputprocessor.udp;
 
-import com.lunex.inputprocessor.Visitor;
+import com.lunex.inputprocessor.CallbackVisitor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -9,18 +9,18 @@ import io.netty.util.CharsetUtil;
 
 public class InputProcessorUDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 	
-	private Visitor visitor;
+	private CallbackVisitor callback;
 	
-	public InputProcessorUDPClientHandler(Visitor visitor) {
-		this.visitor = visitor;
+	public InputProcessorUDPClientHandler(CallbackVisitor visitor) {
+		this.callback = visitor;
 	}
 	
 	@Override
 	public void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
 		//String response = msg.content().toString(CharsetUtil.UTF_8);
 		// TODO with response here
-		if (this.visitor != null) {
-			this.visitor.doJob(msg);
+		if (this.callback != null) {
+			this.callback.doJob(msg);
 		}
 	}
 

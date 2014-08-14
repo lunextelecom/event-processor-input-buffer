@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
 import com.lunex.inputprocessor.Constants;
-import com.lunex.inputprocessor.Visitor;
+import com.lunex.inputprocessor.CallbackVisitor;
 import com.lunex.inputprocessor.testdemo.QuoteOfTheMomentClientHandler;
 
 public class InputProcessorUDPClient {
@@ -27,12 +27,12 @@ public class InputProcessorUDPClient {
 		this.port = port;
 	}
 	
-	public void submitContent(String content, long timeout, Visitor visitor) throws Exception {
+	public void submitContent(String content, long timeout, CallbackVisitor callback) throws Exception {
 
 		EventLoopGroup group = new NioEventLoopGroup();
 		try {
 			Bootstrap b = new Bootstrap();
-			b.group(group).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true).handler(new InputProcessorUDPClientHandler(visitor));
+			b.group(group).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true).handler(new InputProcessorUDPClientHandler(callback));
 
 			Channel ch = b.bind(0).sync().channel();
 
@@ -46,11 +46,11 @@ public class InputProcessorUDPClient {
 		}
 	}
 	
-	public void submitBytesArray(byte[] bytesArray, long timeout, Visitor visitor) throws Exception{
+	public void submitBytesArray(byte[] bytesArray, long timeout, CallbackVisitor callback) throws Exception{
 		EventLoopGroup group = new NioEventLoopGroup();
 		try {
 			Bootstrap b = new Bootstrap();
-			b.group(group).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true).handler(new InputProcessorUDPClientHandler(visitor));
+			b.group(group).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true).handler(new InputProcessorUDPClientHandler(callback));
 
 			Channel ch = b.bind(0).sync().channel();
 			ch.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(bytesArray), new InetSocketAddress(INET_SOCKET_ADDRESS, port))).sync();			
@@ -63,11 +63,11 @@ public class InputProcessorUDPClient {
 		}
 	}
 	
-	public void submitJsonObject(Object bean, long timeout, Visitor visitor) throws Exception {
+	public void submitJsonObject(Object bean, long timeout, CallbackVisitor callback) throws Exception {
 		EventLoopGroup group = new NioEventLoopGroup();
 		try {
 			Bootstrap b = new Bootstrap();
-			b.group(group).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true).handler(new InputProcessorUDPClientHandler(visitor));
+			b.group(group).channel(NioDatagramChannel.class).option(ChannelOption.SO_BROADCAST, true).handler(new InputProcessorUDPClientHandler(callback));
 
 			Channel ch = b.bind(0).sync().channel();
 			JSONObject jsonObject = new JSONObject(bean);
