@@ -11,4 +11,7 @@ public class Constants {
 	public static String UDP_PORT_KEY = "UDP.PORT";
 	public static String UDP_TIME_OUT_KEY = "UDP.TIME.OUT";
 	
+	public enum HTTP_METHOD {
+		POST, GET
+	}
 }

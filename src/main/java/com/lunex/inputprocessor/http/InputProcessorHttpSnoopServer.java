@@ -2,6 +2,7 @@ package com.lunex.inputprocessor.http;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -13,15 +14,15 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 public class InputProcessorHttpSnoopServer {
 	private boolean isSSL;
 	private int port;
-	private String host;	
+	//private String host;	
 	private ServerBootstrap bootStrap;
 	private Channel channel;
 	
 	public int numThread = 1;
 
-	public InputProcessorHttpSnoopServer(String host, int port, boolean isSSL) {
+	public InputProcessorHttpSnoopServer(/*String host, */int port, boolean isSSL) {
 		this.isSSL = isSSL;
-		this.host = host;
+		//this.host = host;
 		this.port = port;
 	}
 	
@@ -42,14 +43,15 @@ public class InputProcessorHttpSnoopServer {
 			bootStrap = new ServerBootstrap();
 			bootStrap.group(bossGroup, workerGroup)
 					.channel(NioServerSocketChannel.class)
-					.handler(new LoggingHandler(LogLevel.DEBUG))
+					.handler(new LoggingHandler(LogLevel.INFO))
 					.childHandler(new InputProcessorHttpSnoopServerInitializer(sslCtx));
 
 			channel = bootStrap.bind(port).sync().channel();
 
-			System.out.println("Open your web browser and navigate to " + (isSSL ? "https" : "http") + "://"  + host +":" + port + '/');
+			//System.out.println("Open your web browser and navigate to " + (isSSL ? "https" : "http") + "://"  + host +":" + port + '/');
 
-			channel.closeFuture().sync();
+			ChannelFuture channelFuture = channel.closeFuture();
+			channelFuture.sync();
 		} finally {
 			bossGroup.shutdownGracefully();
 			workerGroup.shutdownGracefully();
