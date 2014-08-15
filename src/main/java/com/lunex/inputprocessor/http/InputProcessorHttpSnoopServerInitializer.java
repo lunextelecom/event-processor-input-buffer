@@ -8,28 +8,28 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.ssl.SslContext;
 
 public class InputProcessorHttpSnoopServerInitializer extends
-		ChannelInitializer<SocketChannel> {
+	ChannelInitializer<SocketChannel> {
 
-	private final SslContext sslCtx;
+    private final SslContext sslCtx;
 
-	public InputProcessorHttpSnoopServerInitializer(SslContext sslCtx) {
-		this.sslCtx = sslCtx;
+    public InputProcessorHttpSnoopServerInitializer(SslContext sslCtx) {
+	this.sslCtx = sslCtx;
+    }
+
+    @Override
+    public void initChannel(SocketChannel ch) {
+	ChannelPipeline p = ch.pipeline();
+	if (sslCtx != null) {
+	    p.addLast(sslCtx.newHandler(ch.alloc()));
 	}
+	p.addLast(new HttpRequestDecoder());
+	// Uncomment the following line if you don't want to handle HttpChunks.
+	// p.addLast(new HttpObjectAggregator(1048576));
+	p.addLast(new HttpResponseEncoder());
+	// Remove the following line if you don't want automatic content
+	// compression.
+	// p.addLast(new HttpContentCompressor());
 
-	@Override
-	public void initChannel(SocketChannel ch) {
-		ChannelPipeline p = ch.pipeline();
-		if (sslCtx != null) {
-			p.addLast(sslCtx.newHandler(ch.alloc()));
-		}
-		p.addLast(new HttpRequestDecoder());
-		// Uncomment the following line if you don't want to handle HttpChunks.
-		// p.addLast(new HttpObjectAggregator(1048576));
-		p.addLast(new HttpResponseEncoder());
-		// Remove the following line if you don't want automatic content
-		// compression.
-		// p.addLast(new HttpContentCompressor());
-		
-		p.addLast(new InputProcessorHttpSnoopServerHandler());
-	}
+	p.addLast(new InputProcessorHttpSnoopServerHandler());
+    }
 }

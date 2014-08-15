@@ -36,168 +36,179 @@ import java.util.Map.Entry;
 
 import org.json.JSONObject;
 
-public class InputProcessorHttpSnoopServerHandler extends SimpleChannelInboundHandler<Object> {
+public class InputProcessorHttpSnoopServerHandler extends
+	SimpleChannelInboundHandler<Object> {
 
-	private HttpRequest request;
-	/** Buffer that stores the response content */
-	private final StringBuilder responseContentBuilder = new StringBuilder();
-	private JSONObject jsonObject = new JSONObject();
+    private HttpRequest request;
+    /** Buffer that stores the response content */
+    private final StringBuilder responseContentBuilder = new StringBuilder();
+    private JSONObject jsonObject = new JSONObject();
 
-	@Override
-	public void channelReadComplete(ChannelHandlerContext ctx) {
-		ctx.flush();
-	}
-	
-	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-		if (msg instanceof HttpRequest) {
-			HttpRequest request = this.request = (HttpRequest) msg;
-			
-			if (is100ContinueExpected(request)) {
-				send100Continue(ctx);
-			}
-			
-			responseContentBuilder.setLength(0);
-			jsonObject = new JSONObject();
-			HttpHeaders headers = request.headers();
-			if (!headers.isEmpty()) {
-				for (Map.Entry<String, String> h : headers) {
-					String key = h.getKey();
-					String value = h.getValue();
-				}
-			}
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+	ctx.flush();
+    }
 
-			QueryStringDecoder queryStringDecoder = new QueryStringDecoder(
-					request.getUri());
-			Map<String, List<String>> params = queryStringDecoder.parameters();
-			if (!params.isEmpty()) {
-				for (Entry<String, List<String>> p : params.entrySet()) {
-					String key = p.getKey();
-					List<String> vals = p.getValue();					
-					for (String val : vals) {
-						jsonObject.append(key, val);
-					}
-				}
-			}
-			//appendDecoderResult(responseContentBuilder, request);
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+	if (msg instanceof HttpRequest) {
+	    HttpRequest request = this.request = (HttpRequest) msg;
+
+	    if (is100ContinueExpected(request)) {
+		send100Continue(ctx);
+	    }
+
+	    responseContentBuilder.setLength(0);
+	    jsonObject = new JSONObject();
+	    HttpHeaders headers = request.headers();
+	    if (!headers.isEmpty()) {
+		for (Map.Entry<String, String> h : headers) {
+		    String key = h.getKey();
+		    String value = h.getValue();
 		}
-		
-		if (msg instanceof HttpContent) {
-			HttpContent httpContent = (HttpContent) msg;
+	    }
 
-			ByteBuf content = httpContent.content();
-			if (content.isReadable()) {
-				String dataContent = content.toString(CharsetUtil.UTF_8);
-				responseContentBuilder.append(dataContent);
-				String[] params = dataContent.split("&");				
-				for (int i = 0; i < params.length; i++) {
-					String[] param = params[i].split("=");
-					jsonObject.append(param[0], param[1]);
-				}				
-				//appendDecoderResult(responseContentBuilder, request);
-			}
-
-			if (msg instanceof LastHttpContent) {
-				LastHttpContent trailer = (LastHttpContent) msg;
-				if (!trailer.trailingHeaders().isEmpty()) {
-					for (String name : trailer.trailingHeaders().names()) {
-						for (String value : trailer.trailingHeaders().getAll(name)) {
-						}
-					}
-				}
-
-				// TODO something with jsonObject and
-				if (jsonObject.getBoolean("async")) {
-					Thread thread = new Thread(new PackageProcessorThread(jsonObject));
-					thread.start();
-				} else {
-					
-				}
-				// write response
-				if (!writeResponse(trailer, ctx)) {
-					// If keep-alive is off, close the connection once the
-					// content is fully written.
-					ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-				}
-			}
+	    QueryStringDecoder queryStringDecoder = new QueryStringDecoder(
+		    request.getUri());
+	    Map<String, List<String>> params = queryStringDecoder.parameters();
+	    if (!params.isEmpty()) {
+		for (Entry<String, List<String>> p : params.entrySet()) {
+		    String key = p.getKey();
+		    List<String> vals = p.getValue();
+		    for (String val : vals) {
+			jsonObject.append(key, val);
+		    }
 		}
+	    }
+	    // appendDecoderResult(responseContentBuilder, request);
 	}
 
-	/*private static void appendDecoderResult(StringBuilder buf, HttpObject o) {
-		DecoderResult result = o.getDecoderResult();
-		if (result.isSuccess()) {
-			return;
+	if (msg instanceof HttpContent) {
+	    HttpContent httpContent = (HttpContent) msg;
+
+	    ByteBuf content = httpContent.content();
+	    if (content.isReadable()) {
+		String dataContent = content.toString(CharsetUtil.UTF_8);
+		responseContentBuilder.append(dataContent);
+		String[] params = dataContent.split("&");
+		for (int i = 0; i < params.length; i++) {
+		    String[] param = params[i].split("=");
+		    jsonObject.append(param[0], param[1]);
 		}
+		// appendDecoderResult(responseContentBuilder, request);
+	    }
 
-		buf.append(".. WITH DECODER FAILURE: ");
-		buf.append(result.cause());
-		buf.append("\r\n");
-	}*/
-
-	private boolean writeResponse(HttpObject currentObj, ChannelHandlerContext ctx) {
-		// Decide whether to close the connection or not.
-		boolean keepAlive = isKeepAlive(request);
-		
-		// Build the response object.
-		responseContentBuilder.append("asdasdasdsd");
-		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
-				currentObj.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
-				Unpooled.copiedBuffer(responseContentBuilder.toString(), CharsetUtil.UTF_8));
-
-		response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
-
-		if (keepAlive) {
-			// Add 'Content-Length' header only for a keep-alive connection.
-			response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-			// Add keep alive header as per:
-			// -
-			// http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
-			response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-		}
-
-		// Encode the cookie.
-		String cookieString = request.headers().get(COOKIE);
-		if (cookieString != null) {
-			Set<Cookie> cookies = CookieDecoder.decode(cookieString);
-			if (!cookies.isEmpty()) {
-				// Reset the cookies if necessary.
-				for (Cookie cookie : cookies) {
-					response.headers().add(SET_COOKIE, ServerCookieEncoder.encode(cookie));
-				}
+	    if (msg instanceof LastHttpContent) {
+		LastHttpContent trailer = (LastHttpContent) msg;
+		if (!trailer.trailingHeaders().isEmpty()) {
+		    for (String name : trailer.trailingHeaders().names()) {
+			for (String value : trailer.trailingHeaders().getAll(
+				name)) {
 			}
+		    }
+		}
+
+		// TODO something with jsonObject and
+		if (jsonObject.getBoolean("async")) {
+		    Thread thread = new Thread(new PackageProcessorThread(
+			    jsonObject));
+		    thread.start();
 		} else {
-			// Browser sent no cookie. Add some.
-			/*response.headers().add(SET_COOKIE, ServerCookieEncoder.encode("key1", "value1"));
-			response.headers().add(SET_COOKIE, ServerCookieEncoder.encode("key2", "value2"));*/
+
 		}
-
-		// Write the response.
-		ctx.write(response);
-
-		return keepAlive;
-	}
-
-	private static void send100Continue(ChannelHandlerContext ctx) {
-		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
-		ctx.write(response);
-	}
-
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-		cause.printStackTrace();
-		ctx.close();
-	}
-	
-	public class PackageProcessorThread implements Runnable {
-
-		JSONObject jsonObject;
-
-		public PackageProcessorThread(JSONObject jsonObject) {
-			this.jsonObject = jsonObject;
+		// write response
+		if (!writeResponse(trailer, ctx)) {
+		    // If keep-alive is off, close the connection once the
+		    // content is fully written.
+		    ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(
+			    ChannelFutureListener.CLOSE);
 		}
-
-		public void run() {
-			// TODO with Event handler
-		}		
+	    }
 	}
+    }
+
+    /*
+     * private static void appendDecoderResult(StringBuilder buf, HttpObject o)
+     * { DecoderResult result = o.getDecoderResult(); if (result.isSuccess()) {
+     * return; }
+     * 
+     * buf.append(".. WITH DECODER FAILURE: "); buf.append(result.cause());
+     * buf.append("\r\n"); }
+     */
+
+    private boolean writeResponse(HttpObject currentObj,
+	    ChannelHandlerContext ctx) {
+	// Decide whether to close the connection or not.
+	boolean keepAlive = isKeepAlive(request);
+
+	// Build the response object.
+	responseContentBuilder.append("asdasdasdsd");
+	FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
+		currentObj.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
+		Unpooled.copiedBuffer(responseContentBuilder.toString(),
+			CharsetUtil.UTF_8));
+
+	response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+
+	if (keepAlive) {
+	    // Add 'Content-Length' header only for a keep-alive connection.
+	    response.headers().set(CONTENT_LENGTH,
+		    response.content().readableBytes());
+	    // Add keep alive header as per:
+	    // -
+	    // http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+	    response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+	}
+
+	// Encode the cookie.
+	String cookieString = request.headers().get(COOKIE);
+	if (cookieString != null) {
+	    Set<Cookie> cookies = CookieDecoder.decode(cookieString);
+	    if (!cookies.isEmpty()) {
+		// Reset the cookies if necessary.
+		for (Cookie cookie : cookies) {
+		    response.headers().add(SET_COOKIE,
+			    ServerCookieEncoder.encode(cookie));
+		}
+	    }
+	} else {
+	    // Browser sent no cookie. Add some.
+	    /*
+	     * response.headers().add(SET_COOKIE,
+	     * ServerCookieEncoder.encode("key1", "value1"));
+	     * response.headers().add(SET_COOKIE,
+	     * ServerCookieEncoder.encode("key2", "value2"));
+	     */
+	}
+
+	// Write the response.
+	ctx.write(response);
+
+	return keepAlive;
+    }
+
+    private static void send100Continue(ChannelHandlerContext ctx) {
+	FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
+		CONTINUE);
+	ctx.write(response);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+	cause.printStackTrace();
+	ctx.close();
+    }
+
+    public class PackageProcessorThread implements Runnable {
+
+	JSONObject jsonObject;
+
+	public PackageProcessorThread(JSONObject jsonObject) {
+	    this.jsonObject = jsonObject;
+	}
+
+	public void run() {
+	    // TODO with Event handler
+	}
+    }
 }
