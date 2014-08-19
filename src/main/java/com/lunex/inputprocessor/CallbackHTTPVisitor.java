@@ -1,9 +1,12 @@
 package com.lunex.inputprocessor;
 
+import org.json.JSONObject;
+
 import io.netty.channel.ChannelHandlerContext;
 
 public class CallbackHTTPVisitor {
-    public void doJob(ChannelHandlerContext ctx, Object msg) {
-	return;
-    }
+	public JSONObject result;
+	public void doJob(ChannelHandlerContext ctx, Object msg) {
+		return;
+	}
 }
