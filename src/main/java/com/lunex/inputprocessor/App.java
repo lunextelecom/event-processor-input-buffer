@@ -1,5 +1,7 @@
 package com.lunex.inputprocessor;
 
+import com.lunex.inputprocessor.http.InputProcessorHttpSnoopServer;
+
 /**
  * Hello world!
  *
@@ -27,13 +29,13 @@ public class App
 //			e1.printStackTrace();
 //		}
         
-//        InputProcessorHttpSnoopServer server = new InputProcessorHttpSnoopServer(8080, false);
-//        try {
-//			server.startServer();
-//		} catch (Exception e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
+        InputProcessorHttpSnoopServer server = new InputProcessorHttpSnoopServer(8087, false);
+        try {
+			server.startServer();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         try {
         	//ParameterHandler.getPropertiesValues();
 		} catch (Exception e) {

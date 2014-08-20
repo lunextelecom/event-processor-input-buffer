@@ -36,6 +36,8 @@ import java.util.Map.Entry;
 
 import org.json.JSONObject;
 
+import com.lunex.eventhandler.navigation.EventHandlerNavigation;
+
 public class InputProcessorHttpSnoopServerHandler extends
 		SimpleChannelInboundHandler<Object> {
 
@@ -60,16 +62,16 @@ public class InputProcessorHttpSnoopServerHandler extends
 
 			responseContentBuilder.setLength(0);
 			jsonObject = new JSONObject();
-			HttpHeaders headers = request.headers();
+			/* get header information
+			 * HttpHeaders headers = request.headers();
 			if (!headers.isEmpty()) {
 				for (Map.Entry<String, String> h : headers) {
 					String key = h.getKey();
 					String value = h.getValue();
 				}
-			}
+			}*/
 
-			QueryStringDecoder queryStringDecoder = new QueryStringDecoder(
-					request.getUri());
+			QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
 			Map<String, List<String>> params = queryStringDecoder.parameters();
 			if (!params.isEmpty()) {
 				for (Entry<String, List<String>> p : params.entrySet()) {
@@ -89,7 +91,7 @@ public class InputProcessorHttpSnoopServerHandler extends
 			ByteBuf content = httpContent.content();
 			if (content.isReadable()) {
 				String dataContent = content.toString(CharsetUtil.UTF_8);
-				responseContentBuilder.append(dataContent);
+				//responseContentBuilder.append(dataContent);
 				String[] params = dataContent.split("&");
 				for (int i = 0; i < params.length; i++) {
 					String[] param = params[i].split("=");
@@ -99,25 +101,30 @@ public class InputProcessorHttpSnoopServerHandler extends
 			}
 
 			if (msg instanceof LastHttpContent) {
+				/*
+				 * process last http content
+				 */
 				LastHttpContent trailer = (LastHttpContent) msg;
 				if (!trailer.trailingHeaders().isEmpty()) {
-					for (String name : trailer.trailingHeaders().names()) {
+					/*for (String name : trailer.trailingHeaders().names()) {
 						for (String value : trailer.trailingHeaders().getAll(name)) {
 						}
-					}
+					}*/
+					// TODO some thing
 				}
 
-				// TODO something with jsonObject and
-				if (Boolean.valueOf(jsonObject.getString("async"))) {
+				// TODO something with jsonObject and return response
+				if (Boolean.valueOf(jsonObject.getString("async"))) {// process async
 					Thread thread = new Thread(new PackageProcessorThread(jsonObject));
 					thread.start();
-				} else {
-
+				} else {// process and wait result
+					EventHandlerNavigation eventHandler = new EventHandlerNavigation();
+					JSONObject contentResponse = eventHandler.processEvent(this.jsonObject);
+					responseContentBuilder.append(contentResponse);
 				}
 				// write response
 				if (!writeResponse(trailer, ctx)) {
-					// If keep-alive is off, close the connection once the
-					// content is fully written.
+					// If keep-alive is off, close the connection once the content is fully written.
 					ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(
 							ChannelFutureListener.CLOSE);
 				}
@@ -140,7 +147,7 @@ public class InputProcessorHttpSnoopServerHandler extends
 		boolean keepAlive = isKeepAlive(request);
 
 		// Build the response object.
-		responseContentBuilder.append("asdasdasdsd");
+		//responseContentBuilder.append("asdasdasdsd");
 		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
 				currentObj.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
 				Unpooled.copiedBuffer(responseContentBuilder.toString(),
@@ -150,10 +157,8 @@ public class InputProcessorHttpSnoopServerHandler extends
 
 		if (keepAlive) {
 			// Add 'Content-Length' header only for a keep-alive connection.
-			response.headers().set(CONTENT_LENGTH,
-					response.content().readableBytes());
+			response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 			// Add keep alive header as per:
-			// -
 			// http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
 			response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
 		}
@@ -207,6 +212,8 @@ public class InputProcessorHttpSnoopServerHandler extends
 
 		public void run() {
 			// TODO with Event handler
+			EventHandlerNavigation eventHandler = new EventHandlerNavigation();
+			eventHandler.processEvent(this.jsonObject);
 		}
 	}
 }
