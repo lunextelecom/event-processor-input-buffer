@@ -17,7 +17,6 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
-import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.util.CharsetUtil;
 
 import java.util.List;
@@ -89,9 +88,6 @@ public class HttpSnoopServerHandler extends SimpleChannelInboundHandler<Object> 
 			}
 
 			appendDecoderResult(buf, request);
-		}
-		if (msg instanceof HttpData) {
-			int a = 0;
 		}
 		if (msg instanceof HttpContent) {
 			HttpContent httpContent = (HttpContent) msg;

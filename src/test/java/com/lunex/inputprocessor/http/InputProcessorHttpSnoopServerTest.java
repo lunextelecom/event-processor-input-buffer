@@ -23,7 +23,6 @@ public class InputProcessorHttpSnoopServerTest extends TestCase {
 		Thread serverT =  new Thread(new Runnable() {
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
 				try {
 					responseWaiter.countDown();
 					server.startServer();

@@ -17,20 +17,13 @@ package com.lunex.inputprocessor.testdemo;
  15   */
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultCookie;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpContentDecoder;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -105,7 +98,7 @@ public final class HttpSnoopClient {
 			String json = "{\"foo\":\"bar\"}";
 			request.headers().set("json", json);
 			// Send the HTTP request.
-			ChannelFuture chanel = ch.writeAndFlush(request);
+			ch.writeAndFlush(request);
 			
 			// Wait for the server to close the connection.
 			ch.closeFuture().sync();
