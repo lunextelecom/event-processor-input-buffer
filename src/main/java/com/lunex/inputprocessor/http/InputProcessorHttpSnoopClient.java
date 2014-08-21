@@ -2,7 +2,6 @@ package com.lunex.inputprocessor.http;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -43,6 +42,12 @@ public class InputProcessorHttpSnoopClient {
 		this.callback = callback;
 	}
 
+	/**
+	 * prepare host information for processing
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws SSLException
+	 */
 	private boolean preProcessURL() throws URISyntaxException, SSLException {
 		this.uri = new URI(url);
 		this.scheme = uri.getScheme();
@@ -65,18 +70,17 @@ public class InputProcessorHttpSnoopClient {
 		// Configure SSL context if necessary.
 		final boolean ssl = "https".equalsIgnoreCase(scheme);
 		if (ssl) {
-			sslCtx = SslContext
-					.newClientContext(InsecureTrustManagerFactory.INSTANCE);
+			sslCtx = SslContext.newClientContext(InsecureTrustManagerFactory.INSTANCE);
 		} else {
 			sslCtx = null;
 		}
 		return true;
 	}
 
-	public void postRequestJsonContent(JSONObject jsonObject, boolean async) throws Exception {
+	public boolean postRequestJsonContent(JSONObject jsonObject, boolean async) throws Exception {
 		try {
 			if (!this.preProcessURL()) {
-				return;
+				return false;
 			}
 		} catch (URISyntaxException ex) {
 			throw ex;
@@ -94,20 +98,14 @@ public class InputProcessorHttpSnoopClient {
 			Channel ch = b.connect(host, port).sync().channel();
 
 			// Prepare the HTTP request.
-			HttpRequest request = new DefaultFullHttpRequest(
-					HttpVersion.HTTP_1_1, HttpMethod.POST, uri.getRawPath());
+			HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uri.getRawPath());
 			request.headers().set(HttpHeaders.Names.HOST, host);
-			request.headers().set(HttpHeaders.Names.CONNECTION,
-					HttpHeaders.Values.CLOSE);
-			request.headers().set(HttpHeaders.Names.ACCEPT_ENCODING,
-					HttpHeaders.Values.GZIP);
-			request.headers().set(HttpHeaders.Names.ACCEPT_CHARSET,
-					"ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+			request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+			request.headers().set(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
+			request.headers().set(HttpHeaders.Names.ACCEPT_CHARSET, "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
 
-			HttpDataFactory factory = new DefaultHttpDataFactory(
-					DefaultHttpDataFactory.MINSIZE);
-			HttpPostRequestEncoder bodyRequestEncoder = new HttpPostRequestEncoder(
-					factory, request, false); // false => not multipart
+			HttpDataFactory factory = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
+			HttpPostRequestEncoder bodyRequestEncoder = new HttpPostRequestEncoder(factory, request, false); // false => not multipart
 
 			// add Form attribute for body
 			Iterator<?> keys = jsonObject.keys();
@@ -119,13 +117,18 @@ public class InputProcessorHttpSnoopClient {
 			request = bodyRequestEncoder.finalizeRequest();
 
 			// Send the HTTP request.
-			ChannelFuture chanel = ch.writeAndFlush(request);
+			//ChannelFuture chanel = 
+			ch.writeAndFlush(request);
 
 			// Wait for the server to close the connection.
 			ch.closeFuture().sync();
-		} finally {
+		} catch(Exception ex) {
+			throw ex;	
+		}		
+		finally {
 			// Shut down executor threads to exit.
 			group.shutdownGracefully();
 		}
+		return true;
 	}
 }
