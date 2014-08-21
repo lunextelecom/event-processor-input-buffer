@@ -62,14 +62,6 @@ public class InputProcessorHttpSnoopServerHandler extends
 
 			responseContentBuilder.setLength(0);
 			jsonObject = new JSONObject();
-			/* get header information
-			 * HttpHeaders headers = request.headers();
-			if (!headers.isEmpty()) {
-				for (Map.Entry<String, String> h : headers) {
-					String key = h.getKey();
-					String value = h.getValue();
-				}
-			}*/
 
 			QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
 			Map<String, List<String>> params = queryStringDecoder.parameters();
@@ -82,7 +74,6 @@ public class InputProcessorHttpSnoopServerHandler extends
 					}
 				}
 			}
-			// appendDecoderResult(responseContentBuilder, request);
 		}
 
 		if (msg instanceof HttpContent) {
@@ -91,13 +82,11 @@ public class InputProcessorHttpSnoopServerHandler extends
 			ByteBuf content = httpContent.content();
 			if (content.isReadable()) {
 				String dataContent = content.toString(CharsetUtil.UTF_8);
-				//responseContentBuilder.append(dataContent);
 				String[] params = dataContent.split("&");
 				for (int i = 0; i < params.length; i++) {
 					String[] param = params[i].split("=");
 					jsonObject.put(param[0], param[1]);
 				}
-				// appendDecoderResult(responseContentBuilder, request);
 			}
 
 			if (msg instanceof LastHttpContent) {
@@ -106,10 +95,6 @@ public class InputProcessorHttpSnoopServerHandler extends
 				 */
 				LastHttpContent trailer = (LastHttpContent) msg;
 				if (!trailer.trailingHeaders().isEmpty()) {
-					/*for (String name : trailer.trailingHeaders().names()) {
-						for (String value : trailer.trailingHeaders().getAll(name)) {
-						}
-					}*/
 					// TODO some thing
 				}
 
@@ -117,8 +102,10 @@ public class InputProcessorHttpSnoopServerHandler extends
 				if (Boolean.valueOf(jsonObject.getString("async"))) {// process async
 					Thread thread = new Thread(new PackageProcessorThread(jsonObject));
 					thread.start();
-				} else {// process and wait result
+				} else {
+					// process and wait result
 					EventHandlerNavigation eventHandler = new EventHandlerNavigation();
+					System.out.println(this.jsonObject.toString());
 					JSONObject contentResponse = eventHandler.processEvent(this.jsonObject);
 					if (contentResponse != null) {
 						responseContentBuilder.append(contentResponse);
@@ -127,21 +114,11 @@ public class InputProcessorHttpSnoopServerHandler extends
 				// write response
 				if (!writeResponse(trailer, ctx)) {
 					// If keep-alive is off, close the connection once the content is fully written.
-					ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(
-							ChannelFutureListener.CLOSE);
+					ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 				}
 			}
 		}
 	}
-
-	/*
-	 * private static void appendDecoderResult(StringBuilder buf, HttpObject o)
-	 * { DecoderResult result = o.getDecoderResult(); if (result.isSuccess()) {
-	 * return; }
-	 * 
-	 * buf.append(".. WITH DECODER FAILURE: "); buf.append(result.cause());
-	 * buf.append("\r\n"); }
-	 */
 
 	private boolean writeResponse(HttpObject currentObj,
 			ChannelHandlerContext ctx) {
@@ -149,7 +126,6 @@ public class InputProcessorHttpSnoopServerHandler extends
 		boolean keepAlive = isKeepAlive(request);
 
 		// Build the response object.
-		//responseContentBuilder.append("asdasdasdsd");
 		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
 				currentObj.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
 				Unpooled.copiedBuffer(responseContentBuilder.toString(),
@@ -176,14 +152,6 @@ public class InputProcessorHttpSnoopServerHandler extends
 							ServerCookieEncoder.encode(cookie));
 				}
 			}
-		} else {
-			// Browser sent no cookie. Add some.
-			/*
-			 * response.headers().add(SET_COOKIE,
-			 * ServerCookieEncoder.encode("key1", "value1"));
-			 * response.headers().add(SET_COOKIE,
-			 * ServerCookieEncoder.encode("key2", "value2"));
-			 */
 		}
 
 		// Write the response.

@@ -6,8 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpObject;
 
-public class InputProcessorHttpSnoopClientHandler extends
-		SimpleChannelInboundHandler<HttpObject> {
+public class InputProcessorHttpSnoopClientHandler extends SimpleChannelInboundHandler<HttpObject> {
 
 	private CallbackHTTPVisitor callback;
 

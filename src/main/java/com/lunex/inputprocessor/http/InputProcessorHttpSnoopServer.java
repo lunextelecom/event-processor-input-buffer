@@ -16,6 +16,8 @@ public class InputProcessorHttpSnoopServer {
     private int port;
     private ServerBootstrap bootStrap;
     private Channel channel;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
 
     public int numThread = 1;
 
@@ -24,6 +26,10 @@ public class InputProcessorHttpSnoopServer {
 		this.port = port;
 	}
 
+	/**
+	 * Start HTTP server to listen request from client
+	 * @throws Exception
+	 */
 	public void startServer() throws Exception {
 		// Configure SSL.
 		final SslContext sslCtx;
@@ -35,12 +41,11 @@ public class InputProcessorHttpSnoopServer {
 		}
 
 		// Configure the server.
-		EventLoopGroup bossGroup = new NioEventLoopGroup(numThread);
-		EventLoopGroup workerGroup = new NioEventLoopGroup();
+		bossGroup = new NioEventLoopGroup(numThread);
+		workerGroup = new NioEventLoopGroup();
 		try {
 			bootStrap = new ServerBootstrap();
-			bootStrap
-					.group(bossGroup, workerGroup)
+			bootStrap.group(bossGroup, workerGroup)
 					.channel(NioServerSocketChannel.class)
 					.handler(new LoggingHandler(LogLevel.INFO))
 					.childHandler(new InputProcessorHttpSnoopServerInitializer(sslCtx));
@@ -56,5 +61,14 @@ public class InputProcessorHttpSnoopServer {
 			bossGroup.shutdownGracefully();
 			workerGroup.shutdownGracefully();
 		}
+	}
+	
+	/**
+	 * Shutdown server
+	 */
+	public void stopServer() {
+		channel.close();
+		bossGroup.shutdownGracefully();
+		workerGroup.shutdownGracefully();
 	}
 }
