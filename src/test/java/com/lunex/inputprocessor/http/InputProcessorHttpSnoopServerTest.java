@@ -1,6 +1,9 @@
 package com.lunex.inputprocessor.http;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.LastHttpContent;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -33,10 +36,18 @@ public class InputProcessorHttpSnoopServerTest extends TestCase {
 		
 		InputProcessorHttpSnoopClient client = new InputProcessorHttpSnoopClient("http://localhost:8087", new CallbackHTTPVisitor(){
 			@Override
-			public void doJob(ChannelHandlerContext ctx, Object msg) {
-				super.doJob(ctx, msg);
-				responseWaiter.countDown();
-			}
+					public void doJob(ChannelHandlerContext ctx, Object msg) {
+						super.doJob(ctx, msg);
+						if (msg instanceof HttpContent) {
+							HttpContent httpContent = (HttpContent) msg;
+							if (!(msg instanceof LastHttpContent)) {
+								ByteBuf content = httpContent.content();
+								if (content.isReadable()) {
+									responseWaiter.countDown();
+								}
+							}
+						}
+					}
 		});
 		
 		try {
@@ -47,11 +58,11 @@ public class InputProcessorHttpSnoopServerTest extends TestCase {
 		
 		try {
 			responseWaiter.await();
+			server.stopServer();
 		} catch (InterruptedException e) {
 			assertEquals(1, 2);
 		}
 		assertEquals(1, 1);
-		server.stopServer();
 	}
 
 }
