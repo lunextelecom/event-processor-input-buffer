@@ -120,7 +120,9 @@ public class InputProcessorHttpSnoopServerHandler extends
 				} else {// process and wait result
 					EventHandlerNavigation eventHandler = new EventHandlerNavigation();
 					JSONObject contentResponse = eventHandler.processEvent(this.jsonObject);
-					responseContentBuilder.append(contentResponse);
+					if (contentResponse != null) {
+						responseContentBuilder.append(contentResponse);
+					}
 				}
 				// write response
 				if (!writeResponse(trailer, ctx)) {
