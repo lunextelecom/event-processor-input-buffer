@@ -33,8 +33,8 @@ public class InputProcessorHttpSnoopServerTest extends TestCase {
 		});
 		serverT.start();
 		
-		InputProcessorHttpSnoopClient client = new InputProcessorHttpSnoopClient("http://localhost:8087", new CallbackHTTPVisitor(){
-			@Override
+		InputProcessorHttpSnoopClient client = new InputProcessorHttpSnoopClient("http://localhost:8087", new CallbackHTTPVisitor() {
+					@Override
 					public void doJob(ChannelHandlerContext ctx, Object msg) {
 						super.doJob(ctx, msg);
 						if (msg instanceof HttpContent) {
@@ -47,7 +47,7 @@ public class InputProcessorHttpSnoopServerTest extends TestCase {
 							}
 						}
 					}
-		});
+				});
 		
 		try {
 			client.postRequestJsonContent(new JSONObject("{\"key\":\"value\"}"), false);

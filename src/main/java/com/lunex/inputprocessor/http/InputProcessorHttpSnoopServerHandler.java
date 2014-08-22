@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.lunex.eventhandler.navigation.EventHandlerNavigation;
+import com.lunex.eventhandler.utils.JSONObjectUtils;
 
 public class InputProcessorHttpSnoopServerHandler extends
 		SimpleChannelInboundHandler<Object> {
@@ -103,7 +104,8 @@ public class InputProcessorHttpSnoopServerHandler extends
 				}
 
 				// TODO something with jsonObject and return response
-				if (Boolean.valueOf(jsonObject.getString("async"))) {// process async
+				Boolean asycn = JSONObjectUtils.getBoolean("async", jsonObject);
+				if (asycn != null && asycn) {// process async
 					Thread thread = new Thread(new PackageProcessorThread(jsonObject));
 					thread.start();
 				} else {
