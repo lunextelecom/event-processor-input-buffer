@@ -23,11 +23,15 @@ import java.util.Iterator;
 import javax.net.ssl.SSLException;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.lunex.inputprocessor.CallbackHTTPVisitor;
 
 public class InputProcessorHttpSnoopClient {
 
+	static final Logger logger = LoggerFactory.getLogger(InputProcessorHttpSnoopClient.class);
+	
 	private String url;
 	private URI uri;
 	private int port;

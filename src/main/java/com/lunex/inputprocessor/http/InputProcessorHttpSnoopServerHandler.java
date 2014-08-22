@@ -35,12 +35,16 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.lunex.eventhandler.navigation.EventHandlerNavigation;
 
 public class InputProcessorHttpSnoopServerHandler extends
 		SimpleChannelInboundHandler<Object> {
 
+	static final Logger logger = LoggerFactory.getLogger(InputProcessorHttpSnoopServerHandler.class);
+	
 	private HttpRequest request;
 	/** Buffer that stores the response content */
 	private final StringBuilder responseContentBuilder = new StringBuilder();

@@ -1,5 +1,8 @@
 package com.lunex.inputprocessor.http;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -12,6 +15,9 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 public class InputProcessorHttpSnoopServer {
+	
+	static final Logger logger = LoggerFactory.getLogger(InputProcessorHttpSnoopServer.class);
+	
     private boolean isSSL;
     private int port;
     private ServerBootstrap bootStrap;

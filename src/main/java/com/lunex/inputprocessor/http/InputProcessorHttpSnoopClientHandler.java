@@ -1,5 +1,8 @@
 package com.lunex.inputprocessor.http;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.lunex.inputprocessor.CallbackHTTPVisitor;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -8,6 +11,8 @@ import io.netty.handler.codec.http.HttpObject;
 
 public class InputProcessorHttpSnoopClientHandler extends SimpleChannelInboundHandler<HttpObject> {
 
+	static final Logger logger = LoggerFactory.getLogger(InputProcessorHttpSnoopClientHandler.class);
+	
 	private CallbackHTTPVisitor callback;
 
 	public InputProcessorHttpSnoopClientHandler(CallbackHTTPVisitor callback) {
