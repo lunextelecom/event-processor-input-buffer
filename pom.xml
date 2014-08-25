@@ -2,10 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.lunex</groupId>
-	<artifactId>InputProcessorService</artifactId>
+	<artifactId>event-processor-input-buffer</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>InputProcessorService</name>
+	<name>event-processor-input-buffer</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
 		<dependency>
@@ -26,7 +26,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.lunex</groupId>
-			<artifactId>EventHandler</artifactId>
+			<artifactId>event-processor-input</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
