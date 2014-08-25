@@ -1,5 +1,13 @@
 package com.lunex.inputprocessor;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.lunex.inputprocessor.http.InputProcessorHttpSnoopServer;
 
 /**
@@ -7,18 +15,38 @@ import com.lunex.inputprocessor.http.InputProcessorHttpSnoopServer;
  *
  */
 public class App {
+	
+	static final Logger logger = LoggerFactory.getLogger(App.class);
+	
 	public static void main(String[] args) {
-		System.out.println("Hello World!");
+		
+		// load log properties
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream("log4j.properties"));
+			PropertyConfigurator.configure(props);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+		
+		// load param from properties file
+		try {
+			ParameterHandler.getPropertiesValues();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			logger.error(e.getMessage());
+			return;
+		}
+		
 		Thread threadHttpServer = new Thread(new Runnable() {
 			public void run() {
-				// TODO Auto-generated method stub
 				InputProcessorHttpSnoopServer server = new InputProcessorHttpSnoopServer(
-						8087, false);
+						Integer.parseInt(ParameterHandler.HTTP_PORT), false);
 				try {
 					server.startServer();
+					logger.info("Started HTTP server");
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					logger.error(e1.getMessage());
 				}
 			}
 		});
@@ -28,22 +56,16 @@ public class App {
 			public void run() {
 				// TODO Auto-generated method stub
 				InputProcessorHttpSnoopServer server = new InputProcessorHttpSnoopServer(
-						8086, false);
+						Integer.parseInt(ParameterHandler.UDP_PORT), false);
 				try {
 					server.startServer();
+					logger.info("Started UDP server");
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					logger.error(e1.getMessage());
 				}
 			}
 		});
 		threadUDPServer.start();
 
-		try {
-			// ParameterHandler.getPropertiesValues();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }
