@@ -14,7 +14,6 @@ import com.lunex.inputprocessor.CallbackUDPVisitor;
 
 public class InputProcessorUDPServerTest {
 
-	@Test
 	public void testStartServer() {
 		final CountDownLatch responseWaiter = new CountDownLatch(2);
 		final InputProcessorUDPServer server = new InputProcessorUDPServer(8086);

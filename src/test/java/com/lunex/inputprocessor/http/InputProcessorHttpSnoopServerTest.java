@@ -16,7 +16,6 @@ import junit.framework.TestCase;
 
 public class InputProcessorHttpSnoopServerTest extends TestCase {
 
-	@Test
 	public void testStartServer() {
 		final CountDownLatch responseWaiter = new CountDownLatch(2);
 		final InputProcessorHttpSnoopServer server = new InputProcessorHttpSnoopServer(8087, false);
