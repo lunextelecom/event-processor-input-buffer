@@ -8,7 +8,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 import java.util.concurrent.CountDownLatch;
 
 import org.json.JSONObject;
-import org.junit.Test;
+//import org.junit.Test;
 
 import com.lunex.inputprocessor.CallbackHTTPVisitor;
 
