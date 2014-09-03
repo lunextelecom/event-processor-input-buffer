@@ -44,7 +44,7 @@ public class App {
 						Integer.parseInt(ParameterHandler.HTTP_PORT), false);
 				try {
 					server.startServer();
-					logger.info("Started HTTP server");
+					logger.info("Started HTTP server port " + ParameterHandler.HTTP_PORT);
 				} catch (Exception e1) {
 					logger.error(e1.getMessage());
 				}
@@ -59,7 +59,7 @@ public class App {
 						Integer.parseInt(ParameterHandler.UDP_PORT), false);
 				try {
 					server.startServer();
-					logger.info("Started UDP server");
+					logger.info("Started UDP server port " + ParameterHandler.UDP_PORT);
 				} catch (Exception e1) {
 					logger.error(e1.getMessage());
 				}

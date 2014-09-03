@@ -90,7 +90,11 @@ public class InputProcessorHttpSnoopServerHandler extends
 				String[] params = dataContent.split("&");
 				for (int i = 0; i < params.length; i++) {
 					String[] param = params[i].split("=");
-					jsonObject.put(param[0], param[1]);
+					if (param.length > 1) {
+						jsonObject.put(param[0], param[1]);
+					} else {
+						jsonObject.put(param[0], "");
+					}
 				}
 			}
 
